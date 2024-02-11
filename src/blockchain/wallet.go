@@ -1,21 +1,24 @@
 package blockchain
 
 import (
-	"crypto/ecdh"
-	"encoding/json"
+	"bytes"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"encoding/gob"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 )
 
 const (
 	version            = byte(0x00)
-	walletFile         = "wallet_%s.dat"
+	walletFile         = "wallet.dat"
 	addressChecksumLen = 4
 )
 
 type Wallet struct {
-	PrivateKey ecdh.PrivateKey
+	PrivateKey ecdsa.PrivateKey
 	PublicKey  []byte
 }
 
@@ -64,13 +67,15 @@ func (ws *Wallets) LoadFromFile(nodeID string) error {
 		return err
 	}
 
-	fileContent, err := os.ReadFile(walletFile)
+	fileContent, err := ioutil.ReadFile(walletFile)
 	if err != nil {
 		log.Panic(err)
 	}
 
 	var wallets Wallets
-	err = json.Unmarshal(fileContent, &wallets)
+	gob.Register(elliptic.P256())
+	decoder := gob.NewDecoder(bytes.NewReader(fileContent))
+	err = decoder.Decode(&wallets)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -81,15 +86,18 @@ func (ws *Wallets) LoadFromFile(nodeID string) error {
 }
 
 func (ws Wallets) SaveToFile(nodeID string) {
+	var content bytes.Buffer
 	walletFile := fmt.Sprintf(walletFile, nodeID)
 
-	jsonData, err := json.Marshal(ws)
-	fmt.Println(string(jsonData))
+	gob.Register(elliptic.P256())
+
+	encoder := gob.NewEncoder(&content)
+	err := encoder.Encode(ws)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	err = os.WriteFile(walletFile, jsonData, 0644)
+	err = ioutil.WriteFile(walletFile, content.Bytes(), 0644)
 	if err != nil {
 		log.Panic(err)
 	}

@@ -1,7 +1,8 @@
 package blockchain
 
 import (
-	"crypto/ecdh"
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
@@ -168,12 +169,13 @@ func NewWallet() *Wallet {
 	return &wallet
 }
 
-func newKeyPair() (ecdh.PrivateKey, []byte) {
-	private, err := ecdh.P256().GenerateKey(rand.Reader)
+func newKeyPair() (ecdsa.PrivateKey, []byte) {
+	curve := elliptic.P256()
+	private, err := ecdsa.GenerateKey(curve, rand.Reader)
 	if err != nil {
 		log.Panic(err)
 	}
-	pubKey := private.PublicKey().Bytes()
+	pubKey := append(private.PublicKey.X.Bytes(), private.PublicKey.Y.Bytes()...)
 
 	return *private, pubKey
 }
