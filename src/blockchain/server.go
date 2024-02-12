@@ -11,15 +11,19 @@ import (
 	"net"
 )
 
-const protocol = "tcp"
-const nodeVersion = 1
-const commandLength = 12
+const (
+	protocol      = "tcp"
+	nodeVersion   = 1
+	commandLength = 12
+)
 
-var nodeAddress string
-var miningAddress string
-var knownNodes = []string{"localhost:3000"}
-var blocksInTransit = [][]byte{}
-var mempool = make(map[string]Transaction)
+var (
+	nodeAddress     string
+	miningAddress   string
+	knownNodes      = []string{"localhost:3000"}
+	blocksInTransit = [][]byte{}
+	mempool         = make(map[string]Transaction)
+)
 
 type addr struct {
 	AddrList []string
@@ -417,7 +421,6 @@ func handleConnection(conn net.Conn, bc *Blockchain) {
 	conn.Close()
 }
 
-// StartServer starts a node
 func StartServer(nodeID, minerAddress string) {
 	nodeAddress = fmt.Sprintf("localhost:%s", nodeID)
 	miningAddress = minerAddress
