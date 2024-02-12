@@ -2,9 +2,14 @@ package blockchain
 
 import (
 	"bytes"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
 	"crypto/sha256"
+	"crypto/x509"
 	"encoding/binary"
 	"encoding/gob"
+	"encoding/pem"
 	"log"
 	"os"
 
@@ -99,4 +104,30 @@ func DeserializeTransaction(data []byte) Transaction {
 	}
 
 	return transaction
+}
+
+func encode(privateKey *ecdsa.PrivateKey) []byte {
+	x509Encoded, _ := x509.MarshalECPrivateKey(privateKey)
+	pemEncoded := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: x509Encoded})
+
+	return pemEncoded
+}
+
+func decode(pemEncoded []byte) *ecdsa.PrivateKey {
+	block, _ := pem.Decode(pemEncoded)
+	x509Encoded := block.Bytes
+	privateKey, _ := x509.ParseECPrivateKey(x509Encoded)
+
+	return privateKey
+}
+
+func newKeyPair() (ecdsa.PrivateKey, []byte) {
+	curve := elliptic.P256()
+	private, err := ecdsa.GenerateKey(curve, rand.Reader)
+	if err != nil {
+		log.Panic(err)
+	}
+	pubKey := append(private.PublicKey.X.Bytes(), private.PublicKey.Y.Bytes()...)
+
+	return *private, pubKey
 }

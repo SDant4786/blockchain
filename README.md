@@ -1,6 +1,10 @@
 # blockchain
 Based off of this tutorial:https://jeiwan.net/posts/building-blockchain-in-go-part-7/
 
+# unit tests
+from root:
+go test -v ./...
+
 # CLI manual testing
 cd src
 go build -o blockchain_go
@@ -40,7 +44,8 @@ T2
     ./blockchain_go getbalance -address T2_WALLET_3 (should be 1)
 
 
-todo
+# todo
 unit tests 
-docker containers
-stats
+metrics
+docker container
+metric and dashboard containers
